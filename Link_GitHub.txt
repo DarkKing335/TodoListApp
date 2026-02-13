@@ -2,7 +2,9 @@ GitHub Repository URL
 ======================
 
 Repository: https://github.com/DarkKing335/TodoListApp.git
-Branch: main
+Branches:
+  - main (production)
+  - develop (development)
 
 ---
 
