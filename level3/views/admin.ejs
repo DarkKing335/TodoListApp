@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <%- include('partials/header') %>
+</head>
+<body>
+  <!-- Navbar -->
+  <nav class="navbar navbar-dark">
+    <div class="container">
+      <a class="navbar-brand" href="/">
+        <i class="fas fa-check-double me-2"></i>Todo List
+        <span class="badge bg-warning text-dark ms-2">Admin</span>
+      </a>
+      <div class="d-flex align-items-center gap-3">
+        <a href="/" class="btn btn-outline-info btn-sm">
+          <i class="fas fa-home me-1"></i>Trang chủ
+        </a>
+        <span class="navbar-text">
+          <i class="fas fa-crown me-1 text-warning"></i><%= user.fullName %>
+        </span>
+        <a href="/logout" class="btn btn-outline-light btn-sm">
+          <i class="fas fa-sign-out-alt me-1"></i>Đăng xuất
+        </a>
+      </div>
+    </div>
+  </nav>
+
+  <div class="container mt-4">
+    <!-- Flash Messages -->
+    <% if (typeof messages !== 'undefined') { %>
+      <% if (messages.error && messages.error.length) { %>
+        <div class="alert alert-danger alert-dismissible fade show">
+          <%= messages.error %><button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+      <% } %>
+      <% if (messages.success && messages.success.length) { %>
+        <div class="alert alert-success alert-dismissible fade show">
+          <%= messages.success %><button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+      <% } %>
+    <% } %>
+
+    <div class="row">
+      <!-- Left: Create & Assign Task -->
+      <div class="col-lg-5">
+        <!-- Stats -->
+        <div class="row mb-4">
+          <div class="col-6">
+            <div class="stat-card">
+              <div class="stat-icon bg-primary-gradient"><i class="fas fa-tasks"></i></div>
+              <div class="stat-info"><h3><%= totalTasks %></h3><p>Tổng tasks</p></div>
+            </div>
+          </div>
+          <div class="col-6">
+            <div class="stat-card">
+              <div class="stat-icon bg-success-gradient"><i class="fas fa-check-circle"></i></div>
+              <div class="stat-info"><h3><%= doneTasks %></h3><p>Hoàn thành</p></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Progress -->
+        <div class="progress-section mb-4">
+          <div class="d-flex justify-content-between align-items-center mb-2">
+            <h5 class="mb-0"><i class="fas fa-chart-line me-2"></i>Tổng tiến độ</h5>
+            <span class="progress-text"><%= progress %>%</span>
+          </div>
+          <div class="progress" style="height: 12px;">
+            <div class="progress-bar progress-bar-striped progress-bar-animated
+              <%= progress >= 100 ? 'bg-success' : progress >= 50 ? 'bg-info' : 'bg-warning' %>"
+              style="width: <%= progress %>%"></div>
+          </div>
+        </div>
+
+        <!-- Assign Task Form -->
+        <div class="admin-section mb-4">
+          <h5><i class="fas fa-user-plus me-2"></i>Tạo & Phân công Task</h5>
+          <form action="/tasks/assign" method="POST">
+            <div class="mb-3">
+              <label class="form-label">Tiêu đề task</label>
+              <input type="text" name="title" class="form-control" placeholder="Nhập tiêu đề task..." required>
+            </div>
+            <div class="mb-3">
+              <label class="form-label">Mô tả</label>
+              <input type="text" name="description" class="form-control" placeholder="Mô tả (tùy chọn)">
+            </div>
+            <div class="mb-3">
+              <label class="form-label"><i class="fas fa-users me-1"></i>Phân công cho (giữ Ctrl để chọn nhiều)</label>
+              <select name="assignedTo" class="form-select" multiple size="5" required>
+                <% users.forEach(function(u) { %>
+                  <option value="<%= u._id %>">
+                    <%= u.fullName %> (<%= u.username %>) 
+                    <% if (u.role === 'admin') { %>[Admin]<% } %>
+                  </option>
+                <% }); %>
+              </select>
+              <small class="text-muted">Giữ Ctrl + Click để chọn nhiều người</small>
+            </div>
+            <button type="submit" class="btn btn-primary w-100">
+              <i class="fas fa-paper-plane me-1"></i>Tạo & Phân công
+            </button>
+          </form>
+        </div>
+
+        <!-- Users List -->
+        <div class="admin-section">
+          <h5><i class="fas fa-users me-2"></i>Danh sách Users (<%= users.length %>)</h5>
+          <div class="user-list">
+            <% users.forEach(function(u) { %>
+              <div class="user-item">
+                <div class="d-flex align-items-center gap-2">
+                  <i class="fas fa-user-circle" style="font-size: 1.5rem; color: <%= u.role === 'admin' ? '#f59e0b' : '#6c63ff' %>"></i>
+                  <div>
+                    <strong><%= u.fullName %></strong>
+                    <small class="d-block text-muted">@<%= u.username %></small>
+                  </div>
+                </div>
+                <span class="badge <%= u.role === 'admin' ? 'bg-warning text-dark' : 'bg-primary' %>">
+                  <%= u.role === 'admin' ? 'Admin' : 'Normal' %>
+                </span>
+              </div>
+            <% }); %>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right: All Tasks -->
+      <div class="col-lg-7">
+        <div class="task-list-section">
+          <h5><i class="fas fa-list-ul me-2"></i>Tất cả Tasks (<%= tasks.length %>)</h5>
+          <% if (tasks.length === 0) { %>
+            <div class="empty-state">
+              <i class="fas fa-inbox"></i>
+              <p>Chưa có task nào.</p>
+            </div>
+          <% } else { %>
+            <ul class="task-list">
+              <% tasks.forEach(function(task) { %>
+                <%
+                  const completedCount = task.completedBy ? task.completedBy.length : 0;
+                  const totalAssigned = task.assignedTo ? task.assignedTo.length : 0;
+                  const taskProgress = totalAssigned > 0 ? Math.round((completedCount / totalAssigned) * 100) : 0;
+                %>
+                <li class="task-item <%= task.isDone ? 'task-done' : '' %>">
+                  <div class="task-content">
+                    <div class="task-status-icon">
+                      <% if (task.isDone) { %>
+                        <i class="fas fa-check-circle text-success" style="font-size: 1.3rem;"></i>
+                      <% } else { %>
+                        <i class="fas fa-circle text-muted" style="font-size: 1.3rem;"></i>
+                      <% } %>
+                    </div>
+                    <div class="task-text">
+                      <span class="task-title"><%= task.title %></span>
+                      <% if (task.description) { %>
+                        <span class="task-desc"><%= task.description %></span>
+                      <% } %>
+                      <div class="task-meta">
+                        <span><i class="fas fa-calendar-alt me-1"></i><%= task.createdAt.toLocaleDateString('vi-VN') %></span>
+                        <% if (task.createdBy) { %>
+                          <span><i class="fas fa-user me-1"></i><%= task.createdBy.fullName %></span>
+                        <% } %>
+                        <% if (task.isDone && task.doneAt) { %>
+                          <span class="text-success"><i class="fas fa-check me-1"></i><%= task.doneAt.toLocaleString('vi-VN') %></span>
+                        <% } %>
+                      </div>
+                      <!-- Assigned Users -->
+                      <% if (totalAssigned > 0) { %>
+                        <div class="assigned-info mt-1">
+                          <small class="badge-assigned">
+                            <i class="fas fa-users me-1"></i>Phân công:
+                            <% task.assignedTo.forEach(function(u, i) { %>
+                              <span class="<%= task.completedBy && task.completedBy.some(c => c._id.toString() === u._id.toString()) ? 'user-completed' : 'user-pending' %>">
+                                <%= u.fullName %><%= i < task.assignedTo.length - 1 ? ', ' : '' %>
+                              </span>
+                            <% }); %>
+                          </small>
+                          <div class="mini-progress mt-1">
+                            <div class="progress" style="height: 4px; width: 150px;">
+                              <div class="progress-bar <%= taskProgress >= 100 ? 'bg-success' : 'bg-info' %>" style="width: <%= taskProgress %>%"></div>
+                            </div>
+                            <small><%= completedCount %>/<%= totalAssigned %> hoàn thành</small>
+                          </div>
+                        </div>
+                      <% } %>
+                    </div>
+                  </div>
+                  <form action="/tasks/<%= task._id %>/delete" method="POST" class="d-inline">
+                    <button type="submit" class="btn-delete-task" title="Xóa" onclick="return confirm('Xóa task này?')">
+                      <i class="fas fa-trash-alt"></i>
+                    </button>
+                  </form>
+                </li>
+              <% }); %>
+            </ul>
+          <% } %>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <%- include('partials/footer') %>
+</body>
+</html>

@@ -1,0 +1,71 @@
+GitHub Repository URL
+======================
+
+Repository: https://github.com/DarkKing335/TodoListApp.git
+Branch: main
+
+---
+
+HƯỚNG DẪN CLONE VÀ CHẠY
+========================
+
+## Clone repository
+
+```bash
+git clone https://github.com/DarkKing335/TodoListApp.git
+cd TodoListApp
+```
+
+## Chạy từng Level
+
+### Level 1 - REST API
+```bash
+cd level1
+npm install
+npm run seed
+npm start
+```
+Mở: http://localhost:3000
+
+### Level 2 - Web Interface
+```bash
+cd level2
+npm install
+npm run seed
+npm start
+```
+Mở: http://localhost:3000
+Login: nguyenvana / 123456
+
+### Level 3 - Admin & Assignment
+```bash
+cd level3
+npm install
+npm run seed
+npm start
+```
+Mở: http://localhost:3000
+
+Test accounts:
+- Admin: admin / 123456
+- User: nguyenvana / 123456
+- User: nguyenthib / 123456
+- User: tranvanc / 123456
+
+---
+
+YÊU CẦU ĐÃ HOÀN THÀNH
+======================
+
+✅ Level 1 - REST API với 5 endpoints bắt buộc
+✅ Level 2 - Web interface với Progress bar Bootstrap
+✅ Level 3 - Phân quyền Admin/Normal và phân công task
+
+---
+
+CONTACT
+=======
+
+Sinh viên: Nguyễn Anh Bằng
+Lớp: 23CNTT3
+Repository: https://github.com/DarkKing335/TodoListApp.git

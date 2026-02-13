@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <%- include('partials/header') %>
+</head>
+<body>
+  <!-- Navbar -->
+  <nav class="navbar navbar-dark">
+    <div class="container">
+      <a class="navbar-brand" href="/">
+        <i class="fas fa-check-double me-2"></i>Todo List
+      </a>
+      <div class="d-flex align-items-center gap-3">
+        <span class="navbar-text">
+          <i class="fas fa-user-circle me-1"></i><%= user.fullName %>
+        </span>
+        <a href="/logout" class="btn btn-outline-light btn-sm">
+          <i class="fas fa-sign-out-alt me-1"></i>Đăng xuất
+        </a>
+      </div>
+    </div>
+  </nav>
+
+  <div class="container mt-4">
+    <!-- Flash Messages -->
+    <% if (typeof messages !== 'undefined') { %>
+      <% if (messages.error && messages.error.length) { %>
+        <div class="alert alert-danger alert-dismissible fade show">
+          <%= messages.error %><button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+      <% } %>
+      <% if (messages.success && messages.success.length) { %>
+        <div class="alert alert-success alert-dismissible fade show">
+          <%= messages.success %><button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+      <% } %>
+    <% } %>
+
+    <!-- Stats Cards -->
+    <div class="row mb-4">
+      <div class="col-md-4">
+        <div class="stat-card">
+          <div class="stat-icon bg-primary-gradient">
+            <i class="fas fa-tasks"></i>
+          </div>
+          <div class="stat-info">
+            <h3><%= totalTasks %></h3>
+            <p>Tổng công việc</p>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="stat-card">
+          <div class="stat-icon bg-success-gradient">
+            <i class="fas fa-check-circle"></i>
+          </div>
+          <div class="stat-info">
+            <h3><%= doneTasks %></h3>
+            <p>Hoàn thành</p>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="stat-card">
+          <div class="stat-icon bg-warning-gradient">
+            <i class="fas fa-clock"></i>
+          </div>
+          <div class="stat-info">
+            <h3><%= totalTasks - doneTasks %></h3>
+            <p>Chưa hoàn thành</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Progress Bar -->
+    <div class="progress-section mb-4">
+      <div class="d-flex justify-content-between align-items-center mb-2">
+        <h5 class="mb-0"><i class="fas fa-chart-line me-2"></i>Tiến độ hoàn thành</h5>
+        <span class="progress-text"><%= progress %>%</span>
+      </div>
+      <div class="progress" style="height: 12px;">
+        <div class="progress-bar progress-bar-striped progress-bar-animated
+          <%= progress >= 100 ? 'bg-success' : progress >= 50 ? 'bg-info' : 'bg-warning' %>"
+          role="progressbar" style="width: <%= progress %>%"
+          aria-valuenow="<%= progress %>" aria-valuemin="0" aria-valuemax="100">
+        </div>
+      </div>
+    </div>
+
+    <!-- Add Task Form -->
+    <div class="add-task-section mb-4">
+      <h5><i class="fas fa-plus-circle me-2"></i>Thêm công việc mới</h5>
+      <form action="/tasks" method="POST" class="d-flex gap-2">
+        <input type="text" name="title" class="form-control" placeholder="Nhập công việc..." required id="taskInput">
+        <input type="text" name="description" class="form-control" placeholder="Mô tả (tùy chọn)" style="max-width: 300px;">
+        <button type="submit" class="btn btn-primary btn-add" id="addTaskBtn">
+          <i class="fas fa-plus me-1"></i>Thêm
+        </button>
+      </form>
+    </div>
+
+    <!-- Task List -->
+    <div class="task-list-section">
+      <h5><i class="fas fa-list-ul me-2"></i>Danh sách công việc (<%= totalTasks %>)</h5>
+      <% if (tasks.length === 0) { %>
+        <div class="empty-state">
+          <i class="fas fa-inbox"></i>
+          <p>Chưa có công việc nào. Hãy thêm công việc mới!</p>
+        </div>
+      <% } else { %>
+        <ul class="task-list" id="taskList">
+          <% tasks.forEach(function(task) { %>
+            <li class="task-item <%= task.isDone ? 'task-done' : '' %>" data-id="<%= task._id %>">
+              <div class="task-content">
+                <form action="/tasks/<%= task._id %>/toggle" method="POST" class="d-inline">
+                  <button type="submit" class="btn-check-task" title="<%= task.isDone ? 'Đánh dấu chưa hoàn thành' : 'Đánh dấu hoàn thành' %>">
+                    <i class="fas fa-<%= task.isDone ? 'check-circle' : 'circle' %>"></i>
+                  </button>
+                </form>
+                <div class="task-text">
+                  <span class="task-title"><%= task.title %></span>
+                  <% if (task.description) { %>
+                    <span class="task-desc"><%= task.description %></span>
+                  <% } %>
+                  <div class="task-meta">
+                    <span><i class="fas fa-calendar-alt me-1"></i><%= task.createdAt.toLocaleDateString('vi-VN') %></span>
+                    <% if (task.isDone && task.doneAt) { %>
+                      <span class="text-success"><i class="fas fa-check me-1"></i>Hoàn thành: <%= task.doneAt.toLocaleString('vi-VN') %></span>
+                    <% } %>
+                  </div>
+                </div>
+              </div>
+              <form action="/tasks/<%= task._id %>/delete" method="POST" class="d-inline">
+                <button type="submit" class="btn-delete-task" title="Xóa" onclick="return confirm('Bạn có chắc muốn xóa task này?')">
+                  <i class="fas fa-trash-alt"></i>
+                </button>
+              </form>
+            </li>
+          <% }); %>
+        </ul>
+      <% } %>
+    </div>
+  </div>
+
+  <%- include('partials/footer') %>
+</body>
+</html>
