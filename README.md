@@ -1,8 +1,7 @@
 # Todo List Application - Bài Tập Lớn
 
 **Sinh viên:** Nguyễn Anh Bằng - 23CNTT3  
-**Môn học:** Phát triển ứng dụng Web  
-**Hạn nộp:** 22/02/2026 5:59 AM
+**Môn học:** Lập trình JavaScript
 
 ## 📋 Mục lục
 
